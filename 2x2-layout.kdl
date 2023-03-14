@@ -1,0 +1,24 @@
+layout {
+    pane split_direction="horizontal" {
+        pane split_direction="vertical" {
+            pane {
+                command "./laptop-crosswind.sh"
+                name "laptop - crosswind"
+            }
+            pane {
+                command "./mini-crosswind.sh"
+                name "mac mini - crosswind"
+            }
+        }
+        pane split_direction="vertical" {
+            pane {
+                command "./laptop-kaboodle.sh"
+                name "laptop - kaboodle"
+            }
+            pane {
+                command "./mini-kaboodle.sh"
+                name "mac mini - kaboodle"
+            }
+        }
+    }
+}

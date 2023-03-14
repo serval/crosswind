@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ssh mark@fd7a:115c:a1e0:ab12:4843:cd96:6247:1748 "source ~/.zshrc ; cd ~/code/serval/crosswind ; cargo run -- --interface utun3 --multicast-address '[ff02::1213:1989]:7475' --targets '[fd7a:115c:a1e0:ab12:4843:cd96:6250:6d45]:9908'"
