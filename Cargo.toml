@@ -2,6 +2,7 @@
 name = "crosswind"
 version = "0.1.0"
 edition = "2021"
+default-run = "crosswind"
 
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }

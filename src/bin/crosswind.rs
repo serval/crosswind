@@ -1,14 +1,11 @@
 use clap::Parser;
+use crosswind::{create_broadcast_sockets, get_interface};
 use std::{
     net::{IpAddr, SocketAddr, SocketAddrV6},
     process::exit,
     time::Duration,
 };
 use tokio::{net::UdpSocket, time::sleep};
-
-use crate::networking::{create_broadcast_sockets, get_interface};
-
-mod networking;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -56,9 +53,10 @@ async fn main() {
     let (broadcast_in_sock, broadcast_out_sock) =
         create_broadcast_sockets(&interface, &args.multicast_address)
             .expect("Failed to create broadcast sockets");
-    let direct_sock = UdpSocket::bind(format!("[{}]:{}", interface.ip(), args.port))
+    let direct_sock = UdpSocket::bind(format!("[::]:{}", args.port))
         .await
         .expect("Failed to create direct socket");
+    println!("dir = {direct_sock:?}");
 
     const INCOMING_BUFFER_SIZE: usize = 1024;
     let mut buf = [0; INCOMING_BUFFER_SIZE];
@@ -72,12 +70,7 @@ async fn main() {
                 continue;
             }
 
-            println!(
-                "[M:IN] {len} bytes from {sender} / in={} / out={} / loop={}",
-                broadcast_in_sock.local_addr().unwrap().port(),
-                broadcast_out_sock.local_addr().unwrap().port(),
-                sender.ip().is_loopback(),
-            );
+            println!("[M:IN] {len} bytes from {sender}");
             for target in args.targets.iter() {
                 println!("[D:OUT] {len} bytes to {target}");
                 direct_sock
