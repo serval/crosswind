@@ -56,7 +56,6 @@ async fn main() {
     let direct_sock = UdpSocket::bind(format!("[::]:{}", args.port))
         .await
         .expect("Failed to create direct socket");
-    println!("dir = {direct_sock:?}");
 
     const INCOMING_BUFFER_SIZE: usize = 1024;
     let mut buf = [0; INCOMING_BUFFER_SIZE];
