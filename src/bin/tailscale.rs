@@ -1,7 +1,10 @@
+use std::collections::HashMap;
 use std::io::Read;
+use std::net::{IpAddr, SocketAddrV6};
 use std::process::{Command, Stdio};
 
-use serde_json::Value;
+use clap::Parser;
+use serde::Deserialize;
 
 fn run_command(cmd: &str, args: Vec<&str>) -> Result<String, String> {
     let mut cmd = Command::new(cmd);
@@ -17,13 +20,32 @@ fn run_command(cmd: &str, args: Vec<&str>) -> Result<String, String> {
     String::from_utf8(buf).map_err(|err| err.to_string())
 }
 
+#[derive(Debug, Deserialize)]
+struct TailscaleStatus {
+    #[serde(rename = "Peer")]
+    peers: HashMap<String, TailscalePeer>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TailscalePeer {
+    #[serde(rename = "TailscaleIPs")]
+    ips: Vec<IpAddr>,
+}
+
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(long, default_value = "[ff02::1213:1989]:7475")]
+    multicast_address: SocketAddrV6,
+}
+
 fn main() {
+    let args = Args::parse();
     let ip = {
         let output = run_command("tailscale", vec!["ip", "--6"])
             .expect("Failed to get local Tailscale IP address");
         output.trim().to_owned()
     };
-    let status: Value = {
+    let status: TailscaleStatus = {
         let json = run_command(
             "tailscale",
             vec!["status", "--json", "--self=false"], // todo: --active?
@@ -31,26 +53,24 @@ fn main() {
         .expect("Failed to get status");
         serde_json::from_str(&json).expect("Failed to parse JSON")
     };
-    let target_ips = match status.get("Peer") {
-        Some(Value::Object(peer_map)) => peer_map
-            .values()
-            .map(|peer_info| {
-                // "May our children forgive us."
-                // -- President Whitmore
-                peer_info
-                    .get("TailscaleIPs")
-                    .unwrap()
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|ip| ip.as_str().unwrap())
-                    .find(|ip| ip.contains(":"))
-                    .expect("Peer did not have an IPv6 address")
-                    .to_string()
-            })
-            .collect::<Vec<String>>(),
-        _ => panic!("Failed to get list of peers: {:?}", status.get("Peer")),
-    };
+    let target_ips = status
+        .peers
+        .values()
+        .filter_map(|peer| {
+            peer.ips
+                .iter()
+                .filter_map(|ip| {
+                    if ip.is_ipv6() {
+                        Some(ip.to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<String>>()
+                .first()
+                .cloned()
+        })
+        .collect::<Vec<_>>();
 
     let mut argv: Vec<String> = vec![
         "run",
@@ -60,7 +80,7 @@ fn main() {
         "--interface",
         &ip,
         "--multicast-address",
-        "[ff02::1213:1989]:7475",
+        &args.multicast_address.to_string(),
     ]
     .iter()
     .map(|str| str.to_string())
@@ -71,7 +91,6 @@ fn main() {
         argv.push(format!("[{ip}]:9908"));
     }
 
-    println!("{argv:?}");
     let err = exec::Command::new("cargo").args(&argv).exec();
     panic!("Error: {}", err);
 }
