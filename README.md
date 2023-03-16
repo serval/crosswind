@@ -29,7 +29,7 @@ cargo run --\
     --interface <interface name or local IP address>\
     --multicast-address <IPv6 multicast address, including port number>\
     --targets <IPv6 address + port number of other crosswind instance>\
-    --targets <IPv6 address + port number of yet other crosswind instance>\
+    --targets <IPv6 address + port number of yet another crosswind instance>\
     --targets <...and so on>\
     --port <port number to listen on; default is 9908>
 ```
