@@ -47,7 +47,7 @@ pub fn create_broadcast_sockets(
 
     let broadcast_in_sock = {
         let sock = Socket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::UDP))?;
-        sock.join_multicast_v6(&broadcast_socket_addr.ip(), interface_idx)?;
+        sock.join_multicast_v6(broadcast_socket_addr.ip(), interface_idx)?;
         sock.set_nonblocking(true)?;
         sock.set_only_v6(true)?;
         sock.set_reuse_address(true)?;
