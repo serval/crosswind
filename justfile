@@ -7,8 +7,8 @@ help:
     cargo run
 
 # Run crosswind against your tailnet
-@tailscale:
-    cargo run --bin tailscale
+@tailscale *ARGS:
+    cargo run --bin tailscale {{ARGS}}
 
 # Run the same checks we run in CI
 @ci: test
