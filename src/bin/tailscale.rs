@@ -91,6 +91,6 @@ fn main() {
         argv.push(format!("[{ip}]:9908"));
     }
 
-    let err = exec::Command::new("cargo").args(&argv).exec();
+    let err = exec::Command::new("/home/ubuntu/.cargo/bin/cargo").args(&argv).exec();
     panic!("Error: {}", err);
 }
