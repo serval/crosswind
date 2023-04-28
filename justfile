@@ -2,13 +2,13 @@
 help:
     just -l
 
-# Run a single copy of the app
+# Run crosswind with manual configuration
 @run:
     cargo run
 
-# Run four copies of the app in a 2x2 grid
-@tailscale:
-    cargo run --bin tailscale
+# Run crosswind against your tailnet
+@tailscale *ARGS:
+    cargo run --bin tailscale {{ARGS}}
 
 # Run the same checks we run in CI
 @ci: test
